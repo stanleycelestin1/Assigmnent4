@@ -12,6 +12,7 @@ var mongoose = require('mongoose'),
   from assignment 3 https://scotch.io/tutorials/using-mongoosejs-in-node-js-and-mongodb-applications
  */
 
+
 /* Create a listing */
 exports.create = function(req, res) {
 
@@ -40,7 +41,13 @@ exports.create = function(req, res) {
 /* Show the current listing */
 exports.read = function(req, res) {
   /* send back the listing as json from the request */
-  res.json(req.listing);
+  // res.json(req.listing);
+  if(err) {
+      console.log(err);
+      res.status(400).send(err);
+    } else {
+      res.json(req.listing);
+    }
 };
 
 /* Update a listing */
@@ -48,8 +55,16 @@ exports.update = function(req, res) {
   var listing = req.listing;
 
   /* Replace the article's properties with the new properties found in req.body */
+  listing = req.body
   /* save the coordinates (located in req.results if there is an address property) */
+  if(listing.address){
+    listings.coordinates =req.results:
+  }
   /* Save the article */
+  listing.save(function(err){
+    if (err) throw err;
+    console.log('Listing Updated!');
+  });
 };
 
 /* Delete a listing */
@@ -57,6 +72,14 @@ exports.delete = function(req, res) {
   var listing = req.listing;
 
   /* Remove the article */
+  Listing.findOneAndRemove(listing, function(err){
+    if (err) throw err;
+
+    console.log('Listing deleted!');
+
+  });
+
+
 };
 
 /* Retreive all the directory listings, sorted alphabetically by listing code */
