@@ -1,7 +1,11 @@
 
 /* Dependencies */
-var mongoose = require('mongoose'), 
+var mongoose = require('mongoose'),
+    config = require('../config/config'),
     Listing = require('../models/listings.server.model.js');
+
+/*Connect to Database*/
+mongoose.connect(config.db.uri, {userMongoClient: true});
 
 /*
   In this file, you should use Mongoose queries in order to retrieve/add/remove/update listings.
@@ -42,39 +46,49 @@ exports.create = function(req, res) {
 exports.read = function(req, res) {
   /* send back the listing as json from the request */
   // res.json(req.listing);
-  if(err) {
-      console.log(err);
-      res.status(400).send(err);
-    } else {
-      res.json(req.listing);
-    }
+  res.json(req.listing);
+  
 };
 
 /* Update a listing */
 exports.update = function(req, res) {
   var listing = req.listing;
-
+  
   /* Replace the article's properties with the new properties found in req.body */
-  listing = req.body
+  listing.name    = req.body.name;
+  listing.code    = req.body.code;
+  listing.address = req.body.address;
   /* save the coordinates (located in req.results if there is an address property) */
-  if(listing.address){
-    listings.coordinates =req.results:
+  if(req.results){
+    listing.coordinates = {
+      latitude: req.results.lat, 
+      longitude: req.results.lng
+    };
   }
+  
   /* Save the article */
+  // delete listing._id;
   listing.save(function(err){
-    if (err) throw err;
+    if(err){
+      console.log('Not Saved!');
+      console.log(err);
+      res.status(400).send(err);
+    } else {
+    res.json(listing);
     console.log('Listing Updated!');
+   }
   });
+
 };
 
-/* Delete a listing */
+/* Delete a listing mo*/
 exports.delete = function(req, res) {
+  /* Remove the article */
   var listing = req.listing;
 
-  /* Remove the article */
-  Listing.findOneAndRemove(listing, function(err){
+  listing.remove( function(err){
     if (err) throw err;
-
+    res.status(200).end();
     console.log('Listing deleted!');
 
   });
@@ -85,6 +99,12 @@ exports.delete = function(req, res) {
 /* Retreive all the directory listings, sorted alphabetically by listing code */
 exports.list = function(req, res) {
   /* Your code here */
+  Listing.find({}, function(err, listings){
+    if (err) throw err;
+
+    res.json(listings);
+
+  });
 };
 
 /* 
@@ -99,6 +119,10 @@ exports.listingByID = function(req, res, next, id) {
     if(err) {
       res.status(400).send(err);
     } else {
+      // console.log("BEFORE");
+      // console.log(id);
+      // console.log("AFTER");
+      // console.log(listing._id);
       req.listing = listing;
       next();
     }
